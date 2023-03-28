@@ -21,9 +21,10 @@ class Backbone(nn.Module):
                 ):
 
         super().__init__()
-        self.model = model
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        self.model = model.to(self.device)
         data_shape = tuple([data_shape] * (num_dims-2)) # ignore batch and channel dims
         target_shape = tuple([target_shape] * (num_dims-2))
 
