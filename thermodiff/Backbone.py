@@ -23,6 +23,7 @@ class Backbone(nn.Module):
         super().__init__()
         self.model = model
 
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         data_shape = tuple([data_shape] * (num_dims-2)) # ignore batch and channel dims
         target_shape = tuple([target_shape] * (num_dims-2))
 
@@ -104,8 +105,8 @@ class ConvBackbone(Backbone):
 
     def forward(self, batch, t):
         upsampled = self.interp.to_target(batch)
-        upsampled_out = self.model(upsampled, t)
-        batch_out = self.interp.from_target(upsampled_out)
+        upsampled_out = self.model(upsampled.to(self.device), t.to(self.device))
+        batch_out = self.interp.from_target(upsampled_out.to("cpu"))
         return batch_out
 
 class GraphBackbone(Backbone):
