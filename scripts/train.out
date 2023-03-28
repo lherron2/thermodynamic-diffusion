@@ -1,0 +1,10 @@
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Traceback (most recent call last):
+  File "/scratch/zt1/project/tiwary-prj/user/lherron/DDIM/thermodynamic-diffusion/scripts/train.py", line 4, in <module>
+    from DiffusionModel import *
+  File "/home/lherron/scratch/DDIM/thermodynamic-diffusion/thermodiff/DiffusionModel.py", line 19, in <module>
+    class DiffusionModel:
+  File "/home/lherron/scratch/DDIM/thermodynamic-diffusion/thermodiff/DiffusionModel.py", line 25, in DiffusionModel
+    diffusion_process: DiffusionProcess,
+NameError: name 'DiffusionProcess' is not defined
