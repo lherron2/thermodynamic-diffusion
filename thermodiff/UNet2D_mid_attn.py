@@ -320,10 +320,8 @@ class Unet2D(nn.Module):
             self.downs.append(nn.ModuleList([
                 block_klass(dim_in, dim_in, time_emb_dim = time_dim),
                 block_klass(dim_in, dim_in, time_emb_dim = time_dim),
-                Residual(PreNorm(dim_in, LinearAttention(dim_in))),
                 block_klass(dim_in, dim_in, time_emb_dim = time_dim),
                 block_klass(dim_in, dim_in, time_emb_dim = time_dim),
-                Residual(PreNorm(dim_in, LinearAttention(dim_in))),
                 Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding = 1)
             ]))
 
@@ -338,10 +336,8 @@ class Unet2D(nn.Module):
             self.ups.append(nn.ModuleList([
                 block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
                 block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
-                Residual(PreNorm(dim_out, LinearAttention(dim_out))),
                 block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
                 block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
-                Residual(PreNorm(dim_out, LinearAttention(dim_out))),
                 Upsample(dim_out, dim_in) if not is_last else  nn.Conv2d(dim_out, dim_in, 3, padding = 1)
             ]))
 
@@ -363,19 +359,17 @@ class Unet2D(nn.Module):
 
         h = []
 
-        for block1, block2, attn1, block3, block4, attn2, downsample in self.downs:
+        for block1, block2, block3, block4, downsample in self.downs:
             x = block1(x, t)
             h.append(x)
 
             x = block2(x, t)
-            x = attn1(x)
             h.append(x)
 
             x = block3(x, t)
             h.append(x)
 
             x = block4(x, t)
-            x = attn2(x)
             h.append(x)
 
             x = downsample(x)
@@ -384,20 +378,18 @@ class Unet2D(nn.Module):
         x = self.mid_attn(x)
         x = self.mid_block2(x, t)
 
-        for block1, block2, attn1, block3, block4, attn2, upsample in self.ups:
+        for block1, block2, block3, block4, upsample in self.ups:
             x = torch.cat((x, h.pop()), dim = 1)
             x = block1(x, t)
 
             x = torch.cat((x, h.pop()), dim = 1)
             x = block2(x, t)
-            x = attn1(x)
 
             x = torch.cat((x, h.pop()), dim = 1)
             x = block3(x, t)
 
             x = torch.cat((x, h.pop()), dim = 1)
             x = block4(x, t)
-            x = attn2(x)
 
             x = upsample(x)
         x = torch.cat((x, r), dim = 1)

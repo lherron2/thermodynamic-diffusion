@@ -47,30 +47,30 @@ class Backbone(nn.Module):
         self.optim = default(optim_dict["Adam"], optim)
 
         scheduler_dict = {"multistep": MultiStepLR(self.optim,
-                                                   milestones=[2,5,20,40],
+                                                   milestones=[5],
                                                    gamma=0.1),
                          }
 
         self.scheduler = default(scheduler_dict["multistep"], scheduler)
 
+    @staticmethod
+    def get_model_path(directory, epoch):
+        return os.path.join(directory.model_path, f"{directory.identifier}_{epoch}.pt")
+
     def save_state(self, directory, epoch):
         """
         saves internal state of the backbone model.
         """
-        identifier = directory.identifier
-        model_path = directory.model_path
         states = {"model": self.model.state_dict(), "optim": self.optim.state_dict(), "epoch": epoch}
-        os.makedirs(model_path, exist_ok=True)
-        save_path = os.path.join(model_path, f"{identifier}_{epoch}.pt")
+        os.makedirs(directory.model_path, exist_ok=True)
+        save_path = self.get_model_path(directory, epoch)
         torch.save(states, save_path)
 
     def load_state(self, directory, epoch):
         """
         loads internal state of the backbone model.
         """
-        identifier = directory.identifier
-        model_path = directory.model_path
-        state_dict = torch.load(os.path.join(model_path, f"{identifier}_ckpt_{epoch}.pth"),
+        state_dict = torch.load(self.get_model_path(directory, epoch),
                                 map_location=torch.device(directory.device))
         return state_dict
 
@@ -94,6 +94,8 @@ class ConvBackbone(Backbone):
                  num_dims=4,
                  lr=1e-3,
                  optim=None,
+                 eval_mode='train',
+                 self_condition=True,
                  scheduler=None):
 
         super().__init__(model,
@@ -104,9 +106,28 @@ class ConvBackbone(Backbone):
                          optim,
                          scheduler)
 
+        self.eval_mode = eval_mode
+        self.self_condition = True
+
+    def get_self_condition(self, data, t):
+        if self.eval_mode == 'train' and self.self_condition == True:
+            if torch.rand(1) < 0.5:
+                with torch.no_grad():
+                    return self.model(data.to(self.device), t.to(self.device))
+            else:
+                return None
+        elif self.eval_mode == 'sample' and self.self_condition == True:
+            return self.model(data.to(self.device), t.to(self.device))
+        else:
+            return None
+
     def forward(self, batch, t):
         upsampled = self.interp.to_target(batch)
-        upsampled_out = self.model(upsampled.to(self.device), t.to(self.device))
+
+        self_condition = self.get_self_condition(upsampled, t)
+        upsampled_out = self.model(upsampled.to(self.device),
+                                   t.to(self.device),
+                                   x_self_cond=self_condition)
         batch_out = self.interp.from_target(upsampled_out.to("cpu"))
         return batch_out
 

@@ -1,0 +1,61 @@
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+modules imported
+modules imported
+modules imported
+modules imported
+modules imported
+modules imported
+modules imported
+modules imported
+{'paths': {'model_path': '1zih/experiments/gvecs/x0_pred_sc/saved_models', 'dataset_path': '1zih/datasets/1zih_gvec_dataset.npy', 'sample_path': '1zih/experiments/gvecs/x0_pred_sc/samples', 'identifier': '1zih_x0_pred_sc'}}
+{'paths': {'model_path': '5udz/experiments/gvecs/x0_pred_no_sc/saved_models', 'dataset_path': '5udz/datasets/5udz_gvec_dataset.npy', 'sample_path': '5udz/experiments/gvecs/x0_pred_no_sc/samples', 'identifier': '5udz_x0_pred_no_sc'}}
+modules imported{'paths': {'model_path': '1zih/experiments/gvecs/noise_pred_no_sc/saved_models', 'dataset_path': '1zih/datasets/1zih_gvec_dataset.npy', 'sample_path': '1zih/experiments/gvecs/noise_pred_no_sc/samples', 'identifier': '1zih_noise_pred_no_sc'}}
+modules imported
+{'paths': {'model_path': '1zih/experiments/gvecs/x0_pred_no_sc/saved_models', 'dataset_path': '1zih/datasets/1zih_gvec_dataset.npy', 'sample_path': '1zih/experiments/gvecs/x0_pred_no_sc/samples', 'identifier': '1zih_x0_pred_no_sc'}}
+{'paths': {'model_path': '1anr/experiments/gvecs/x0_pred_sc/saved_models', 'dataset_path': '1anr/datasets/1anr_gvec_dataset.npy', 'sample_path': '1anr/experiments/gvecs/x0_pred_sc/samples', 'identifier': '1anr_x0_pred_sc'}}
+{'paths': {'model_path': '1anr/experiments/gvecs/noise_pred_no_sc/saved_models', 'dataset_path': '1anr/datasets/1anr_gvec_dataset.npy', 'sample_path': '1anr/experiments/gvecs/noise_pred_no_sc/samples', 'identifier': '1anr_noise_pred_no_sc'}}
+{'paths': {'model_path': '1anr/experiments/gvecs/noise_pred_sc/saved_models', 'dataset_path': '1anr/datasets/1anr_gvec_dataset.npy', 'sample_path': '1anr/experiments/gvecs/noise_pred_sc/samples', 'identifier': '1anr_noise_pred_sc'}}
+{'paths': {'model_path': '1anr/experiments/gvecs/x0_pred_no_sc/saved_models', 'dataset_path': '1anr/datasets/1anr_gvec_dataset.npy', 'sample_path': '1anr/experiments/gvecs/x0_pred_no_sc/samples', 'identifier': '1anr_x0_pred_no_sc'}}
+{'paths': {'model_path': '5udz/experiments/gvecs/x0_pred_sc/saved_models', 'dataset_path': '5udz/datasets/5udz_gvec_dataset.npy', 'sample_path': '5udz/experiments/gvecs/x0_pred_sc/samples', 'identifier': '5udz_x0_pred_sc'}}
+{'paths': {'model_path': '1zih/experiments/gvecs/noise_pred_sc/saved_models', 'dataset_path': '1zih/datasets/1zih_gvec_dataset.npy', 'sample_path': '1zih/experiments/gvecs/noise_pred_sc/samples', 'identifier': '1zih_noise_pred_sc'}}
+step: 0, loss 52.422
+step: 0, loss 89.987
+step: 0, loss 34.744
+step: 0, loss 35.088
+step: 0, loss 157.955
+step: 0, loss 151.490
+step: 0, loss 179.258
+step: 0, loss 83.218
+step: 0, loss 150.432
+step: 0, loss 84.926
+step: 100, loss 41.539
+step: 100, loss 30.771
+step: 100, loss 38.637
+step: 100, loss 30.542
+slurmstepd: error: *** JOB 1397858 ON gpu-b10-3 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397862 ON gpu-b10-7 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397863 ON gpu-b11-1 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397860 ON gpu-b10-5 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397859 ON gpu-b10-4 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397855 ON gpu-b9-7 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397861 ON gpu-b10-6 CANCELLED AT 2023-03-29T15:39:42 ***
+slurmstepd: error: *** JOB 1397857 ON gpu-b10-2 CANCELLED AT 2023-03-29T15:39:42 ***

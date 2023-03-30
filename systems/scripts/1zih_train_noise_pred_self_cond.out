@@ -1,0 +1,7 @@
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+modules imported
+{'paths': {'model_path': '1zih/experiments/gvecs/x0_pred_sc/saved_models', 'dataset_path': '1zih/datasets/1zih_gvec_dataset.npy', 'sample_path': '1zih/experiments/gvecs/x0_pred_sc/samples', 'identifier': '1zih_x0_pred_sc'}}
+step: 0, loss 75.010
+step: 100, loss 45.677
+step: 200, loss 26.417

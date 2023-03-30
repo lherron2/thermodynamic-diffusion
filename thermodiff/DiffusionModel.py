@@ -27,8 +27,6 @@ class DiffusionModel:
                  loader,
                  directory,
                  pred_type,
-                 optim=None,
-                 scheduler=None,
                  control_ref=310,
                  rescale_func_name="no_rescale",
                  RESCALE_FUNCS=RESCALE_FUNCS,
@@ -38,7 +36,6 @@ class DiffusionModel:
         self.BB = backbone
         self.DP = diffusion_process
         self.directory = directory
-        self.scheduler = scheduler
         self.control_ref = control_ref
         self.pred_type = pred_type
         self.rescale_func = RESCALE_FUNCS[rescale_func_name]
@@ -75,18 +72,20 @@ class DiffusionModel:
         data_in = default(b_t, data_in)
         b_t_next = self.DP.reverse_step(b_t, t, t_next, self.BB,
                                         self.pred_type, data_in=data_in)
-        if control:
+        if control is not None:
             scale = self.rescale_func(control, self.control_ref)
-            bt_next[loader.control_slice] = control
+            b_t_next[self.loader.control_slice] = control
 
         return b_t_next
 
-    def sample_prior(self, batch_size, dims, control=None):
-        scale = self.rescale_func(control, self.control_ref)
-        prior_sample =  torch.randn(sample_batch_size, *dims, dtype=torch.float)*scale
-        if control:
-            scale = self.rescale_func(control, self.control_ref)
-            prior_sample[loader.control_slice] = control
+    def sample_prior(self, batch_size, dims, unstd_control=None, std_control=None):
+        if unstd_control is not None:
+            scale = self.rescale_func(unstd_control, self.control_ref)
+            prior_sample =  torch.randn(batch_size, *dims, dtype=torch.float)*scale
+            prior_sample[self.loader.control_slice] = std_control
+        else:
+            prior_sample =  torch.randn(batch_size, *dims, dtype=torch.float)*scale
+
         return prior_sample
 
     def sample_times(self, num_times):
@@ -96,7 +95,7 @@ class DiffusionModel:
         """
         return torch.randint(low=0,
                   high=self.DP.num_diffusion_timesteps,
-                  size=(num_times,)).long().to(self.directory.device)
+                  size=(num_times,)).long()
 
     @staticmethod
     def get_adjacent_times(times):
@@ -104,7 +103,7 @@ class DiffusionModel:
         Pairs t with t+1 for all times in the time-discretization
         of the diffusion process.
         """
-        times_next = [0] + list(times[:-1])
+        times_next = torch.cat((torch.Tensor([0]).long(), times[:-1]))
         return list(zip(reversed(times), reversed(times_next)))
 
 class DiffusionTrainer(DiffusionModel):
@@ -131,24 +130,22 @@ class DiffusionTrainer(DiffusionModel):
                          loader,
                          directory,
                          pred_type,
-                         optim,
-                         scheduler,
                          control_ref,
                          rescale_func_name,
                          RESCALE_FUNCS)
 
-    def loss_function(self, e, e_pred, weight, loss_type="VLB"):
+    def loss_function(self, e, e_pred, weight, loss_type="l2"):
         """
         loss function can be the l1-norm, l2-norm, or the VLB (weighted l2-norm)
         """
 
-        sum_indices = tuple(list(range(1,loader.num_dims)))
+        sum_indices = tuple(list(range(1,self.loader.num_dims)))
 
         def l1_loss(e, e_pred, weight):
             return (e - e_pred).abs().sum(sum_indices)
 
         def l2_loss(e, e_pred, weight):
-            return (e - e_pred).pow(2).sum(sum_indices).pow(0.5).mean()
+            return (e - e_pred).pow(2).sum((1,2,3)).pow(0.5).mean()
 
         def VLB_loss(e, e_pred, weight):
             return (weight*((e - e_pred).pow(2).sum(sum_indices)).pow(0.5)).mean()
@@ -179,19 +176,20 @@ class DiffusionTrainer(DiffusionModel):
                 t_prev[t_prev == -1] = 0
                 weight = self.DP.compute_SNR(t_prev) - self.DP.compute_SNR(t)
                 b_t, noise = self.noise_batch(b, t, unstd_control)
-                b_0, noise_pred = self.denoise_batch(b_t, t, unstd_control)
+                b_0, noise_pred = self.denoise_batch(b_t, t)
                 loss = self.loss_function(noise, noise_pred, weight, loss_type=loss_type)/grad_accumulation_steps
 
                 if i % grad_accumulation_steps == 0:
                     self.BB.optim.zero_grad()
                     loss.backward()
                     self.BB.optim.step()
+                    self.BB.scheduler.step()
 
                 if i % print_freq == 0:
                     print(f"step: {i}, loss {loss.detach():.3f}")
             print(f"epoch: {epoch}")
-            if self.scheduler:
-                self.scheduler.step()
+            if self.BB.scheduler:
+                self.BB.scheduler.step()
 
             self.BB.save_state(self.directory, epoch)
 
@@ -215,17 +213,28 @@ class DiffusionSampler(DiffusionModel):
                          loader,
                          directory,
                          pred_type,
-                         optim,
-                         scheduler,
                          control_ref,
                          rescale_func_name,
                          RESCALE_FUNCS)
 
-    def sample_batch(self, batch_size, control):
-        xt = self.sample_prior(batch_size, self.loader.num_dims, control=control)
+    def sample_batch(self, batch_size, unstd_control):
+
+        std_control = self.loader.standardize(unstd_control)
+
+        xt = self.sample_prior(batch_size,
+                               self.loader.get_all_but_batch_dim(),
+                               unstd_control=unstd_control, # for rescaling noise
+                               std_control=std_control, # for guiding tensor
+                               )
+
         time_pairs = self.get_adjacent_times(self.DP.times)
+
         for t, t_next in time_pairs:
-            xt_next = self.denoise_step(xt, t, t_next, control)
+            print(t, t_next)
+            t = torch.Tensor.repeat(t, batch_size)
+            t_next = torch.Tensor.repeat(t_next, batch_size)
+
+            xt_next = self.denoise_step(xt, t, t_next, std_control)
             xt = xt_next
         return xt
 
@@ -235,7 +244,12 @@ class DiffusionSampler(DiffusionModel):
         np.savez_compressed(os.path.join(save_path, f"{save_prefix}_idx={save_idx}.npz"), traj=batch)
 
     def sample_loop(self, num_samples, batch_size, save_prefix, temperature):
-        for save_idx in range(num_samples//batch_size):
-            x0 = self.sample_batch(batch_size, temperature)
-            self.save_batch(x0, save_prefix, temperature, save_idx)
+        n_runs = max(num_samples//batch_size, 1)
+        if num_samples//batch_size == 0:
+            batch_size = num_samples
+        with torch.no_grad():
+            for save_idx in range(n_runs):
+                unstd_control = torch.Tensor([temperature])
+                x0 = self.sample_batch(batch_size, unstd_control)
+                self.save_batch(x0[:,:-1,:,:], save_prefix, temperature, save_idx)
 

@@ -18,8 +18,6 @@ class WhitenTransform(Transform):
         super().__init__(data, dim, pos)
         self.mean = data.mean(0)[pos]
         self.std = data.std(0)[pos]
-        print(self.mean.shape)
-        print(self.std.shape)
 
     def forward(self, x):
         return (x - self.mean)/self.std
@@ -33,8 +31,6 @@ class MinMaxTransform(Transform):
 
         self.min_data = data.min(0)[pos]
         self.max_data = data.max(0)[pos]
-        print(self.min_data.shape)
-        print(self.max_data.shape)
 
     def forward(self, x):
         return (x - self.min_data)/2*(self.max_data - self.min_data)
@@ -83,15 +79,15 @@ DEQUANTIZERS = {
 
 class Loader(Dataset):
     def __init__(self,
-                 directory,
-                 num_dims=4,
-                 transform_type="whiten",
-                 control_tuple=(1, -1),
-                 dequantize=True,
-                 dequantize_type="normal",
-                 dequantize_scale=1e-2,
-                 TRANSFORMS=TRANSFORMS,
-                 DEQUANTIZERS=DEQUANTIZERS,
+                 directory: Directory,
+                 num_dims: int = 4,
+                 transform_type: str = "whiten",
+                 control_tuple: tuple = (1, -1),
+                 dequantize: bool = True,
+                 dequantize_type: str = "normal",
+                 dequantize_scale: float = 1e-2,
+                 TRANSFORMS: dict = TRANSFORMS,
+                 DEQUANTIZERS: dict = DEQUANTIZERS,
                 ):
 
 
@@ -103,7 +99,9 @@ class Loader(Dataset):
             self.data = self.dequantize(self.data)
 
         self.data_dim = self.data.shape[-1]
-        self.num_dims = num_dims
+        self.num_channels = self.data.shape[1]
+        self.num_dims = len(self.data.shape)
+
 
         # building slice object to retrieve control params from Tensor
         (self.control_slice,
@@ -183,7 +181,16 @@ class Loader(Dataset):
     def get_num_dims(self):
         return self.num_dims
 
+    def get_num_channels(self):
+        return self.num_channels
+
+    def get_all_but_batch_dim(self):
+        return self.data.shape[1:]
+
     def get_batch(self, index):
+        """
+        Used for testing purposes.
+        """
         x = self.data[index:index+1]
         std_control = self.std_control[index:index+1]
         x[self.control_slice] = std_control
@@ -198,7 +205,7 @@ class Loader(Dataset):
 
         The returned tensors must have dimension data_dim - 1.
         """
-        x = self.data[index:index+1]
+        x = torch.clone(self.data[index:index+1])
         unstd_control = self.unstd_control[index:index+1]
         std_control = self.std_control[index:index+1]
         x[self.control_slice] = std_control

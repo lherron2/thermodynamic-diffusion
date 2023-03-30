@@ -1,0 +1,5 @@
+paths:
+    model_path: PDBID/experiments/gvecs/EXPID/saved_models
+    dataset_path: PDBID/datasets/PDBID_gvec_dataset.npy
+    sample_path: PDBID/experiments/gvecs/EXPID/samples
+    identifier: PDBID_EXPID

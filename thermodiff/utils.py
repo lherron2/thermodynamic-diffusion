@@ -42,6 +42,7 @@ class Directory: # belongs in utils
                  pdb: str,
                  sys_yaml_path: str,
                  exp_yaml_path: str,
+                 expid: str,
                  device: str,
                  num_devices: int
                 ):
@@ -52,8 +53,10 @@ class Directory: # belongs in utils
 
         # replacing wildcards in loaded yaml files
         self.pdb = pdb
-        wildcards = {"PDBID" : self.pdb}
+        wildcards = {"PDBID" : self.pdb,
+                     "EXPID" : expid}
         self.exp_params = self.replace_wildcards(self.exp_params, wildcards)
+        print(self.exp_params)
 
         self.identifier = self.exp_params["paths"]["identifier"]
         self.base_path = self.system_params["system"]["exp_path"]
@@ -68,7 +71,8 @@ class Directory: # belongs in utils
             for k, v in d_.items():
                 if isinstance(v, str):
                     for k_, v_ in wildcard_d.items():
-                        d[k_header][k] = v.replace(k_, v_)
+                        v = v.replace(k_, v_)
+                    d[k_header][k] = v
         return d
 
     def get_backbone_path(self):

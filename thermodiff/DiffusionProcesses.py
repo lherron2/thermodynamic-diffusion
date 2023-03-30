@@ -35,8 +35,10 @@ class DiffusionProcess:
                 ):
 
         self.num_diffusion_timesteps = num_diffusion_timesteps
-        self.times = torch.arange(num_diffusion_timesteps+1)
-        self.alphas = NOISE_FUNCS[noise_schedule](self.times, alpha_max, alpha_min)
+        self.times = torch.arange(num_diffusion_timesteps)
+        self.alphas = NOISE_FUNCS[noise_schedule](torch.arange(num_diffusion_timesteps+1),
+                                                  alpha_max,
+                                                  alpha_min)
 
 class VPDiffusion(DiffusionProcess):
     """
@@ -99,7 +101,7 @@ class VPDiffusion(DiffusionProcess):
         alphas_t_next = self.alphas[t_next]
         data_in = default(x_t, data_in)
         x0_t, noise = self.reverse_kernel(x_t, t, backbone, pred_type, data_in=data_in)
-        xt_next = self.bmul(alphas_t_next.sqrt(), x0_t) + self.bmul((1-alphas_t_next), noise)
+        xt_next = self.bmul(alphas_t_next.sqrt(), x0_t) + self.bmul((1-alphas_t_next).sqrt(), noise)
         return xt_next
 
     def sample_prior(self, xt, scale):

@@ -1,0 +1,28 @@
+Loading cuda/11.6.2/gcc/9.4.0/zen2
+  Loading requirement: gcc/9.4.0
+modules imported
+step: 0, loss 72.782
+step: 100, loss 62.904
+step: 200, loss 62.870
+step: 300, loss 64.126
+step: 400, loss 63.159
+step: 500, loss 62.039
+step: 600, loss 62.322
+step: 700, loss 62.078
+step: 800, loss 62.269
+step: 900, loss 62.810
+step: 1000, loss 61.297
+step: 1100, loss 62.111
+step: 1200, loss 59.657
+step: 1300, loss 61.922
+step: 1400, loss 60.350
+step: 1500, loss 61.671
+epoch: 0
+Traceback (most recent call last):
+  File "/scratch/zt1/project/tiwary-prj/user/lherron/repos/thermodyanmic-diffusion/scripts/train.py", line 65, in <module>
+    trainer.train(100, loss_type="l2", batch_size=64, print_freq=100)
+  File "/home/lherron/scratch/repos/thermodyanmic-diffusion/thermodiff/DiffusionModel.py", line 191, in train
+    self.BB.save_state(self.directory, epoch)
+  File "/home/lherron/scratch/repos/thermodyanmic-diffusion/thermodiff/Backbone.py", line 66, in save_state
+    save_path = get_model_path(directory, epoch)
+NameError: name 'get_model_path' is not defined
